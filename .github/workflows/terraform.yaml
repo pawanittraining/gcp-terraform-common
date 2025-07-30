@@ -12,9 +12,6 @@ on:
           - apply
           - destroy
 
-  push:
-    branches: [ "main" ]
-
 jobs:
   terraform:
     name: 'Terraform Apply on GCP'

@@ -1,10 +1,4 @@
-# Terraform on GCP with GCS Backend
-
-This project provisions Google Cloud resources using Terraform and stores the Terraform state file in a **Google Cloud Storage (GCS)** bucket.
-
-## 📁 Project Structure
-
-# GCP Terraform Project: Custom Image & Managed Instance Group
+# GCP Terraform Project: Custom Image, Instance Templates, Managed Instance Group, Global load balancer
 
 This Terraform project automates deployment of:
 
@@ -15,88 +9,158 @@ This Terraform project automates deployment of:
 - Terraform remote backend (GCS)
 - GitHub Actions CI/CD integration
 
---- 
+---
 
 ## ⚙️ Pre-requisites
 
+Before using this automation setup, ensure the following are configured:
+
+### ✅ 1. Create a GCS Bucket for Terraform State
+
+Terraform needs a remote backend to store its state file:
+
+```bash
+gsutil mb -p <YOUR_PROJECT_ID> -l us-central1 gs://terraform-state-bucket-web-app
+````
+
+Ensure the bucket name matches what is configured in your Terraform backend block:
+
+```hcl
+terraform {
+  backend "gcs" {
+    bucket = "terraform-state-bucket-web-app"
+    prefix = "custom-image"
+  }
+}
+```
 
 ---
-## Setup Instructions
 
-### 1. Enable Required APIs
+### ✅ 2. Create a GCP Service Account
+
+This service account will be used by GitHub Actions to deploy infrastructure:
+
 ```bash
-gcloud services enable compute.googleapis.com iam.googleapis.com cloudresourcemanager.googleapis.com
-
-PROJECT_ID=<your-project-id>
-
 gcloud iam service-accounts create terraform-deployer \
-  --description="Terraform deployer" \
+  --description="Terraform GitHub CI/CD account" \
   --display-name="Terraform Deployer"
+```
 
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:terraform-deployer@$PROJECT_ID.iam.gserviceaccount.com" \
+### ✅ 3. Assign Roles to the Service Account
+
+Grant the following IAM roles (either at project level or via IAM policy):
+
+| Role                                               | Purpose                                |
+| -------------------------------------------------- | -------------------------------------- |
+| `roles/compute.admin`                              | Manage VM, Instance Templates, MIGs    |
+| `roles/storage.admin`                              | Store Terraform state and VM images    |
+| `roles/iam.serviceAccountUser`                     | Bind service account in deployments    |
+| `roles/resourcemanager.projectIamAdmin` (optional) | If managing IAM policies via Terraform |
+
+```bash
+gcloud projects add-iam-policy-binding <YOUR_PROJECT_ID> \
+  --member="serviceAccount:terraform-deployer@<YOUR_PROJECT_ID>.iam.gserviceaccount.com" \
   --role="roles/compute.admin"
 
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:terraform-deployer@$PROJECT_ID.iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding <YOUR_PROJECT_ID> \
+  --member="serviceAccount:terraform-deployer@<YOUR_PROJECT_ID>.iam.gserviceaccount.com" \
   --role="roles/storage.admin"
 
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:terraform-deployer@$PROJECT_ID.iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding <YOUR_PROJECT_ID> \
+  --member="serviceAccount:terraform-deployer@<YOUR_PROJECT_ID>.iam.gserviceaccount.com" \
   --role="roles/iam.serviceAccountUser"
-
-# Optional: for IAM management via Terraform
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:terraform-deployer@$PROJECT_ID.iam.gserviceaccount.com" \
-  --role="roles/resourcemanager.projectIamAdmin"
-
-## ☁️ Setup GCS Remote Backend
-
-Create a GCS bucket to store Terraform state:
-
-```bash
-# Set your GCP project
-gcloud config set project <your-project-id>
-
-# Create bucket (change region if needed)
-gsutil mb -l us-central1 -p <your-project-id> gs://terraform-state-bucket-web-app
-
-
-# GitHub Actions Terraform Workflow for GCP Multi-Module Deployment
-
-This GitHub Actions workflow enables you to run Terraform commands (`apply` or `destroy`) on specific Terraform modules (`custom-image` or `MIG`) within this repository.
+```
 
 ---
 
-## Workflow Overview
-
-- **Modules:**  
-  - `custom-image` — For building custom VM images.  
-  - `MIG` — For Managed Instance Group resources.
-
-- **Actions:**  
-  - `apply` — Run `terraform apply` to provision resources.  
-  - `destroy` — Run `terraform destroy` to tear down resources.
-
----
-
-## Authentication Setup
-
-To allow GitHub Actions to deploy resources on GCP, you must:
-
-### 1. Create a Service Account in GCP
-
-Use the following roles to enable Terraform provisioning:
-
-- `roles/compute.admin`
-- `roles/storage.admin`
-- `roles/iam.serviceAccountUser`
-- `roles/resourcemanager.projectIamAdmin` (optional, for advanced IAM management)
-
-### 2. Create and Download a JSON Key
+### ✅ 4. Create and Download a Service Account Key
 
 ```bash
 gcloud iam service-accounts keys create terraform-key.json \
   --iam-account=terraform-deployer@<YOUR_PROJECT_ID>.iam.gserviceaccount.com
+```
 
+---
 
+### ✅ 5. Save the Key to GitHub Secrets
+
+1. Go to your GitHub repo → **Settings** → **Secrets and Variables** → **Actions**
+2. Click **New repository secret**
+3. Name it: `GCP_AMANHELPSCLOUD_CUSTOM_IMAGE_BUILD`
+4. Paste the **contents** of the `terraform-key.json` file
+
+---
+
+## 🔁 Running the Terraform Workflow
+
+### Manually via GitHub UI
+
+1. Go to **Actions** tab in your repository
+2. Select **Terraform GCP Multi-Module Workflow**
+3. Click **Run workflow**
+4. Provide:
+
+   * **module**: `custom-image` or `MIG`
+   * **action**: `apply` or `destroy`
+5. Click **Run workflow**
+
+### Using GitHub CLI
+
+```bash
+gh workflow run "Terraform GCP Multi-Module Workflow" \
+  -f module=custom-image \
+  -f action=apply
+```
+
+Replace values as per requirement (`MIG`, `destroy`, etc.)
+
+---
+
+## 📁 Directory Structure
+
+```bash
+├── MIG
+│   ├── firewall.tf
+│   ├── instance_group.tf
+│   ├── instane_template.tf
+│   ├── load_balancer_mig.tf
+│   ├── output.tf
+│   ├── provider.tf
+│   ├── terraform.tfvars
+│   └── variables.tf
+├── custom-image
+│   ├── files/
+│   │   └── apache.sh
+│   ├── image.tf
+│   ├── output.tf
+│   ├── provider.tf
+│   ├── terraform.tfvars
+│   └── variables.tf
+├── .github/
+│   └── workflows/
+│       └── terraform.yml
+├── README.md
+```
+
+---
+
+## ✅ Terraform Backend Sample
+
+Inside each module (e.g., `custom-image/provider.tf`):
+
+```hcl
+terraform {
+  backend "gcs" {
+    bucket = "terraform-state-bucket-web-app"
+    prefix = "custom-image"
+  }
+}
+```
+
+---
+
+## 🌐 Notes
+
+* Always keep your service account key secure — never commit it.
+* Use `terraform.tfvars` in each module directory to override variables.
+* Use the `terraform destroy` action carefully — it tears down infrastructure.

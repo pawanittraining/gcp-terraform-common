@@ -49,9 +49,6 @@ resource "google_compute_image" "web_app_image" {
   description = "Custom image created from demo VM"
 
   depends_on = [null_resource.stop_vm]
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 # (Optional) Step 4: Delete the instance after image creation

@@ -1,7 +1,9 @@
-data "google_compute_image" "web_app_image" {
-  name    = var.instance_template_image
-  project = var.project_id
+data "google_compute_image" "latest_web_app_image" {
+  project      = var.project_id
+  most_recent  = true
+  filter       = "name eq ^web-app-image-${var.environment}-.*"
 }
+
 
 
 resource "google_compute_instance_template" "instance_template" {
@@ -20,7 +22,7 @@ resource "google_compute_instance_template" "instance_template" {
 
   // Create a new boot disk from an image
   disk {
-    source_image      = google_compute_image.web_app_image.self_link
+    source_image      = data.google_compute_image.latest_web_app_image.self_link
     auto_delete       = true
     boot              = true
     // backup the disk every day
@@ -29,7 +31,7 @@ resource "google_compute_instance_template" "instance_template" {
   network_interface {
     network = var.vpc_name
   }
-  metadata_startup_script = file("files/apache.sh")
+
 }
 resource "google_compute_resource_policy" "daily_backup" {
   name   = "every-day-4am"

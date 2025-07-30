@@ -1,10 +1,18 @@
-name: Terraform GCP Deployment
+name: Terraform GCP Multi-Module Workflow
 
 on:
   workflow_dispatch:
     inputs:
+      module:
+        description: 'Terraform module to run'
+        required: true
+        default: 'custom-image'
+        type: choice
+        options:
+          - custom-image
+          - MIG
       action:
-        description: 'Terraform action to run'
+        description: 'Terraform action to perform'
         required: true
         default: 'apply'
         type: choice
@@ -14,13 +22,12 @@ on:
 
 jobs:
   terraform:
-    name: 'Terraform Apply on GCP'
-    if: ${{ github.event_name == 'push' || github.event.inputs.action == 'apply' }}
+    name: 'Terraform ${{ github.event.inputs.action }} on ${{ github.event.inputs.module }}'
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: custom-image
+        working-directory: ${{ github.event.inputs.module }}
 
     steps:
       - name: Checkout code
@@ -44,47 +51,21 @@ jobs:
         run: terraform init
 
       - name: Terraform Format
+        if: github.event.inputs.action == 'apply'
         run: terraform fmt -recursive
 
       - name: Terraform Validate
+        if: github.event.inputs.action == 'apply'
         run: terraform validate
 
       - name: Terraform Plan
+        if: github.event.inputs.action == 'apply'
         run: terraform plan
 
-      - name: Terraform Apply (Auto Approved)
-        if: github.ref == 'refs/heads/main' || github.event.inputs.action == 'apply'
+      - name: Terraform Apply
+        if: github.event.inputs.action == 'apply'
         run: terraform apply -auto-approve
 
-  destroy:
-    name: 'Terraform Destroy on GCP'
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy' }}
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: custom-image
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.6.6
-
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.GCP_AMANHELPSCLOUD_CUSTOM_IMAGE_BUILD }}'
-
-      - name: Set GCP Project
-        run: |
-          gcloud config set project gcp-learning-465509
-
-      - name: Terraform Init
-        run: terraform init
-
       - name: Terraform Destroy
+        if: github.event.inputs.action == 'destroy'
         run: terraform destroy -auto-approve

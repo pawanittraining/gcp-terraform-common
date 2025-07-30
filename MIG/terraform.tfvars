@@ -15,4 +15,4 @@ common_labels = {
 }
 
 instance_count = 2
-instance_template_image = "web-app-dev"
+instance_template_image = "web-app-image-dev"

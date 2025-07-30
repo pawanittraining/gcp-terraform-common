@@ -9,36 +9,40 @@ jobs:
     name: 'Terraform Apply on GCP'
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: custom-image
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.6.6
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
 
-    - name: Authenticate to GCP
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: '${{ secrets.GCP_AMANHELPSCLOUD_CUSTOM_IMAGE_BUILD }}'
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_AMANHELPSCLOUD_CUSTOM_IMAGE_BUILD }}'
 
-    - name: Set GCP Project
-      run: |
-        gcloud config set project YOUR_PROJECT_ID
+      - name: Set GCP Project
+        run: |
+          gcloud config set project gcp-learning-465509
 
-    - name: Terraform Init
-      run: terraform init
+      - name: Terraform Init
+        run: terraform init
 
-    - name: Terraform Format Check
-      run: terraform fmt -check
+      - name: Terraform Format Check
+        run: terraform fmt -check
 
-    - name: Terraform Validate
-      run: terraform validate
+      - name: Terraform Validate
+        run: terraform validate
 
-    - name: Terraform Plan
-      run: terraform plan
+      - name: Terraform Plan
+        run: terraform plan
 
-    - name: Terraform Apply (Auto Approved)
-      if: github.ref == 'refs/heads/main'
-      run: terraform apply -auto-approve
+      - name: Terraform Apply (Auto Approved)
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve

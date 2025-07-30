@@ -3,3 +3,9 @@ provider "google" {
   region  = var.region
 }
 
+terraform {
+  backend "gcs" {
+    bucket  = "terraform-state-bucket-web-app"
+    prefix  = "MIG"
+  }
+}

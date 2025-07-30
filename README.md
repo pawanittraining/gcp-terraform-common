@@ -1,8 +1,13 @@
+# GCP Terraform Project: Custom Image, Instance Templates, Managed Instance Group, Global load balancer
 
-````markdown
-# 🚀 Terraform GCP Multi-Module Deployment (via GitHub Actions)
+This Terraform project automates deployment of:
 
-This repository automates the provisioning of GCP infrastructure such as custom VM images, instance templates, Managed Instance Groups (MIG), and load balancers using Terraform. Deployments are triggered via GitHub Actions workflow with module selection and execution type (`apply` or `destroy`).
+- Custom boot images
+- Instance templates
+- Managed Instance Groups (MIG)
+- Load balancers & firewall rules
+- Terraform remote backend (GCS)
+- GitHub Actions CI/CD integration
 
 ---
 

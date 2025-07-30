@@ -13,7 +13,7 @@ resource "google_compute_instance" "demo_vm" {
   zone         = var.zone[0]
 
   tags = var.tags
-  labels = merge(var.common_labels, {environment = var.environment}, {
+  labels = merge(var.common_labels, { environment = var.environment }, {
     name = "demo-instance"
   })
 
@@ -43,7 +43,7 @@ resource "null_resource" "stop_vm" {
 }
 
 resource "google_compute_image" "web_app_image" {
-  name = "web-app-image-${var.environment}-${formatdate("YYYYMMDDhhmmss", timestamp())}"
+  name        = "web-app-image-${var.environment}-${formatdate("YYYYMMDDhhmmss", timestamp())}"
   source_disk = google_compute_instance.demo_vm.boot_disk[0].source
   family      = "custom-debian"
   description = "Custom image created from demo VM for instance group template"

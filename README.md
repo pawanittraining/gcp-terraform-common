@@ -1,19 +1,3 @@
-# Terraform on GCP with GCS Backend
-
-This project provisions Google Cloud resources using Terraform and stores the Terraform state file in a **Google Cloud Storage (GCS)** bucket.
-
-# GCP Terraform Project: Custom Image & Managed Instance Group
-
-This Terraform project automates deployment of:
-
-- Custom boot images
-- Instance templates
-- Managed Instance Groups (MIG)
-- Load balancers & firewall rules
-- Terraform remote backend (GCS)
-- GitHub Actions CI/CD integration
-
-Here's your final `README.md` with a complete **Pre-requisites** section, as well as earlier details for GitHub Actions workflow, GCP service account setup, and module usage:
 
 ````markdown
 # 🚀 Terraform GCP Multi-Module Deployment (via GitHub Actions)
@@ -176,11 +160,4 @@ terraform {
 * Use `terraform.tfvars` in each module directory to override variables.
 * Use the `terraform destroy` action carefully — it tears down infrastructure.
 
----
 
-🛠️ **Happy automating Terraform on GCP with GitHub Actions!**
-
-```
-
-Let me know if you'd like this provided as a downloadable file or further customized for CI/CD environments.
-```

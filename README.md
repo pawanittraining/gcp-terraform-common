@@ -1,4 +1,4 @@
-# GCP Terraform Project: Custom Image, Instance Templates, Managed Instance Group, Global load balancer
+# GCP Terraform Project: Custom Image, Instance Templates, Managed Instance Group, Global Load Balancer, VPC Network, and GKE Cluster
 
 This Terraform project automates deployment of:
 
@@ -6,9 +6,12 @@ This Terraform project automates deployment of:
 - Instance templates
 - Managed Instance Groups (MIG)
 - Load balancers & firewall rules
+- VPC network and subnets
+- GKE (Google Kubernetes Engine) cluster
 - Terraform remote backend (GCS)
 - GitHub Actions CI/CD integration
 
+---
 ---
 
 ## ⚙️ Pre-requisites
@@ -91,6 +94,32 @@ gcloud iam service-accounts keys create terraform-key.json \
 
 ---
 
+📂 Terraform Code Structure
+The project is organized into the following folders:
+
+custom-image/: Contains code to create custom boot images.
+instance-template/: Contains code to create instance templates.
+managed-instance-group/: Contains code to create managed instance groups.
+load-balancer/: Contains code to create global load balancers and firewall rules.
+vpc-network/: Contains code to create a custom VPC network and subnets.
+gke/: Contains code to create a GKE cluster.
+
+---
+
+🚀 GitHub Actions Workflow
+This project includes a GitHub Actions workflow to automate Terraform deployment. The workflow is defined in .github/workflows/terraform.yml.
+
+Workflow Features:
+Terraform Initialization:
+
+Initializes the Terraform backend using the GCS bucket.
+Terraform Plan and Apply:
+
+Runs terraform plan to preview changes.
+Runs terraform apply to deploy infrastructure.
+Support for VPC and GKE:
+
+
 ## 🔁 Running the Terraform Workflow
 
 ### Manually via GitHub UI
@@ -100,7 +129,7 @@ gcloud iam service-accounts keys create terraform-key.json \
 3. Click **Run workflow**
 4. Provide:
 
-   * **module**: `custom-image` or `MIG`
+   * **module**: `custom-image` or `MIG` or `VPC-Network` or `gke`
    * **action**: `apply` or `destroy`
 5. Click **Run workflow**
 

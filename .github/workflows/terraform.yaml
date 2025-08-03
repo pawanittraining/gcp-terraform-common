@@ -11,6 +11,9 @@ on:
         options:
           - custom-image
           - MIG
+          - VPC-Network
+          - gke
+          
       action:
         description: 'Terraform action to perform'
         required: true
